@@ -15,6 +15,10 @@ In this project, the ELO rating methodology, which was developed to rank Chess p
 
 Anticipated challenges involve maintaining a reasonable scale: WNBA data exists extending back to 1997, and computing 29 seasons of ELO ratings may prove cumbersome if an efficient and repeatable architecture is not implemented from the start. The 2025 season will be used as a baseline from which the methods can be extended backward to cover the entire WNBA history, if practical. Other anticipated challenges may arise when visualizing the results of this analysis. A potential graph could compare ELO ratings vs time for a select group of teams.
 
+# Adaptation
+
+The original project assignment, related to a chess tournament, asked for specific outputs in a .csv file (e.g. player name, player state, total number of points, player pre-rating, and average opponent rating). For this adapted project, the output .csv file will contain columns for: team name, total wins, final ELO rating, and opponents' average ELO rating.
+
 # Codebase
 
 ```{r libraries-packages}
@@ -26,6 +30,7 @@ Anticipated challenges involve maintaining a reasonable scale: WNBA data exists 
 
 library(tidyverse)
 library(wehoop)
+library(elo)
 ```
 
 ## Data Import from wehoop
@@ -75,12 +80,15 @@ head(df)
 df <- df |>
     group_by(game_id, team_id) |>
     filter(season_type == 2) |>
-    mutate(ELO = 1300) |>
     arrange(game_date_time)
-view(df)
 ```
 
 ```{r split-data}
+
+#| echo = true
+#| warning = false
+#| message = false
+
 away_df <- df |>
   filter(team_home_away == "away") |>
   select(game_id, 
@@ -88,7 +96,6 @@ away_df <- df |>
          away_team_id = team_id, 
          away_team_display_name = team_display_name,
          away_team_winner = team_winner,
-         away_ELO = ELO
          )
 
 home_df <- df |>
@@ -96,32 +103,90 @@ home_df <- df |>
   select(game_id, 
          home_team_id = team_id, 
          home_team_display_name = team_display_name,
-         home_team_winner = team_winner,
-         home_ELO = ELO
+         home_team_winner = team_winner
   )
 ```
 
 ```{r join-dfs}
 
+#| echo = true
+#| warning = false
+#| message = false
+
 full_df <- inner_join(away_df, home_df, by = "game_id") |>
-  mutate(home_win = if_else(home_team_winner == TRUE, "Win", "Loss")) |>
+  mutate(home_win = if_else(home_team_winner == TRUE, 1, 0)) |>
   select(game_id,
          game_date,
          home_team_id,
          home_team_display_name,
          away_team_id,
          away_team_display_name,
-         home_ELO,
-         away_ELO,
          home_win
          )
+
+unique(full_df$home_team_display_name)
+# TEAM CLARK present
+unique(full_df$away_team_display_name)
+# TEAM COLLIER present
+
+full_df <- full_df |>
+  filter(away_team_display_name != "TEAM COLLIER" & home_team_display_name != "TEAM CLARK")
+
+unique(full_df$home_team_display_name)
+# TEAM CLARK removed
+unique(full_df$away_team_display_name)
+# TEAM COLLIER removed
 ```
 
 ## ELO calculations
 
+A running ELO rating is calculated using the ELO R package
+
 ```{r ELO-calcs-1}
 
-full_df <- full_df |>
-  
+#| echo = true
+#| warning = false
+#| message = false
+
+K <- as.integer(30)
+default_elo <- as.integer(1000)
+
+elo_run <- elo.run(
+  formula = home_win ~ home_team_display_name + away_team_display_name,
+  data = full_df,
+  k = K,
+  initial.elos = default_elo
+)
+elo_results <- as.data.frame(elo_run)
+```
+
+```{r elo-tidying}
+
+#| echo = true
+#| warning = false
+#| message = false
+
+full_elo_df <- bind_cols(full_df, elo_results) 
+
+full_elo_df <- full_elo_df |>
+  mutate(
+    home_elo_pre =elo.A - update.A,
+    away_elo_pre = elo.B - update.B,
+    home_elo_post = elo.A,
+    away_elo_post = elo.B
+  ) |>
+  ungroup()
+
+full_elo_df <-full_elo_df |>
+  select(game_date, 
+         home_team_display_name, 
+         away_team_display_name, 
+         home_elo_pre, 
+         home_elo_post, 
+         away_elo_pre, 
+         away_elo_post
+  )
+
+view(full_elo_df)
 
 ```
