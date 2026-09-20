@@ -1,0 +1,10 @@
+---
+title: "DATA 607 - Project 1 - WNBA ELO Ratings"
+author: "Kailot C. Harris"
+date: "2026/09/20"
+format: html
+editor: visual
+theme: night
+---
+
+## Introduction and Overview
