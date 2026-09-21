@@ -286,6 +286,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="adaptation" class="level1">
 <h1>Adaptation</h1>
 <p>The original project assignment, related to a chess tournament, asked for specific outputs in a .csv file (e.g.&nbsp;player name, player state, total number of points, player pre-rating, and average opponent rating). For this adapted project, the output .csv file will contain columns for: team name, total wins, final ELO rating, and opponents’ average ELO rating.</p>
+<p>In the context of a single WNBA season, the last metric (opponents’ average ELO rating) is not an effective proxy for strength of schedule, due to the balanced, round-robin structure of the WNBA. There are 13 teams (as of 2025) and each team plays each opponent team 3 or 4 times total in a season, amounting to 44 total games per team. Because ELO is a zero-sum system with a baseline value, the mean rating of all teams played over the course of a season will tend toward the baseline ELO rating of 1300 .If this project is extended to trace multiyear ELO rating trajectories, then the opponents’ average ELO rating may hold more significance for analysis.</p>
 </section>
 <section id="codebase" class="level1">
 <h1>Codebase</h1>
@@ -298,7 +299,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="tidying-and-pruning-data" class="level2">
 <h2 class="anchored" data-anchor-id="tidying-and-pruning-data">Tidying and Pruning Data</h2>
-<p>The data frame has clean naming conventions applied via the <code>janitor</code> package’s <code>clean_names()</code> function. Then only the relevant columns are selected, omitting superfluous columns that are not meaningful in this methodology.</p>
+<p>The data frame has clean naming conventions applied via the <code>janitor</code> package’s <code>clean_names()</code> function. Then, only the relevant columns are selected, omitting superfluous columns that are not meaningful in this methodology.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>box <span class="ot">&lt;-</span> janitor<span class="sc">::</span><span class="fu">clean_names</span>(box)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -387,6 +388,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="tidying-elo-results" class="level2">
 <h2 class="anchored" data-anchor-id="tidying-elo-results">Tidying ELO Results</h2>
+<p>The <code>elo_results</code> data frame is appended to the <code>full_df</code> data frame, which merges the ELO calculations into the transformed game data. Pre- and post-game ELO ratings are stored for each home and away team, and only columns relevant to further analysis are selected.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>full_elo_df <span class="ot">&lt;-</span> <span class="fu">bind_cols</span>(full_df, elo_results) </span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -412,6 +414,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>         away_elo_post</span>
 <span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>An initial attempt was made to mutate in calculations to the assembled <code>full_elo_df</code> data frame. These calculations were aimed at totaling the number of wins, losses, and total games for each team. However, this procedure produced erroneous results with high variance in the total games per team. A second approach was successful in calculating these totals, but a tidy, long data frame was needed. To achieve this long data frame, the <code>full_elo_df</code> frame was split into home and away team data frames, with identical column names. This allowed for the use of the <code>bind_rows()</code> function, in which a second data frame is appended vertically to a first data frame. The resulting long data frame was ready for calculating summary metrics.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>home_team_df <span class="ot">&lt;-</span> full_elo_df <span class="sc">|&gt;</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(game_date,</span>
@@ -439,6 +442,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="summarizing-season-results" class="level2">
 <h2 class="anchored" data-anchor-id="summarizing-season-results">Summarizing Season Results</h2>
+<p>The <code>summary_2025</code> data frame is formed via the <code>tidyverse</code> package’s <code>summarize()</code> function, which (as opposed to window functions) flattens rows into a single aggregated row. New data frames also contained summary data for the top 3 teams (<code>top_3_df</code>) and bottom 3 teams (<code>bottom_3_df</code>) in the WNBA for the 2025 season. The combined <code>ext_6_df</code> was constructed for verification and visualization purposes, and it’s output is displayed below.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>summary_2025 <span class="ot">&lt;-</span> all_teams_df <span class="sc">|&gt;</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(team) <span class="sc">|&gt;</span></span>
@@ -772,6 +776,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </table>
 </div>
 </div>
+</section>
+<section id="troubleshooting-extra-lynx-vs.-fever-game" class="level2">
+<h2 class="anchored" data-anchor-id="troubleshooting-extra-lynx-vs.-fever-game">Troubleshooting Extra Lynx vs.&nbsp;Fever Game</h2>
 <div class="cell">
 <div class="cell-output-display">
 <table class="caption-top">
