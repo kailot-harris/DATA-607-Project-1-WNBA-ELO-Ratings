@@ -262,16 +262,19 @@ summary_2025 |>
     plot.title.position = "plot",
     plot.caption.position = "plot",
     plot.title = element_text(size = 15, face = "bold"),
+    plot.subtitle = element_text(size = 13, face = "italic"),
     axis.text.y = element_text(size = 11, face = "bold"),
-    axis.text.x = element_text(size = 11, face = "bold")
+    axis.text.x = element_text(size = 11, face = "bold"),
+    axis.title.y = element_text(size = 12, face = "bold"),
+    axis.title.x = element_text(size = 12, face = "bold"),
+    plot.background = element_rect(fill="transparent", color = NA),
+    panel.background = element_rect(fill="transparent", color = NA)
   )
 ```
 
 notes to fix above graphic:
 
-- add in labels via geom_label and chr vector of labels for team names
-
-- labs()
+- 
 
 ```{r viz-ELO-trajectory}
 ext_6_names <- unique(ext_6_df$team)
@@ -287,7 +290,17 @@ ext_6_game_df |>
   geom_point(alpha = 0.5, show.legend = FALSE, size = 2.75) +
   geom_smooth(method = 'loess', formula = 'y~x', show.legend = TRUE, linewidth = 1.75) +
   labs(title = "ELO Trajectory Through 2025 Season for Top and Bottom 3 Teams", subtitle = "data sourced from wehoop R package", y= "ELO Rating", x= "Game Date (2025)", color = "Team") +
-  theme_dark()
+  theme_dark() +
+  theme(
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    plot.title = element_text(size = 15, face = "bold"),
+    plot.subtitle = element_text(size = 13, face = "italic"),
+    axis.text.y = element_text(size = 11, face = "bold"),
+    axis.text.x = element_text(size = 11, face = "bold"),
+    plot.background = element_rect(fill="transparent", color = NA),
+    panel.background = element_rect(fill="transparent", color = NA)
+  )
 ```
 
 ```{r viz-upsets}
@@ -296,7 +309,6 @@ ext_6_game_df |>
 #|message: false
 #|fig-height: 9
 #|fig-width: 6
-
 
 upsets <- full_elo_df |>
   mutate(
@@ -321,46 +333,16 @@ upsets |> ggplot(aes(x=elo_diff, y=reorder(matchup, elo_diff))) +
     plot.title.position = "plot",
     plot.caption.position = "plot",
     plot.title = element_text(size = 15, face = "bold"),
+    plot.subtitle = element_text(size = 13, face = "italic"),
+    plot.caption = element_text(size = 10, face = "italic", hjust = 0),
     axis.text.y = element_text(size = 11, face = "bold"),
     axis.text.x = element_text(size = 11, face = "bold")
     )
 ```
 
-```{r viz-3}
+## Exporting to .csv
 
-summary_2025 |>
-  ggplot(aes(x=avg_opp_elo, y=total_losses)) +
-  geom_point(alpha=0.8, show.legend = FALSE) +
-  geom_smooth(method = 'lm', formula = 'y ~ x', show.legend = FALSE) +
-  theme_dark()
-```
-
-notes to fix above graphic:
-
-- 
-
-- labs()
-
-```{r viz-4}
-
-#GOAL: show rel bw avg-opp-elo and final-elo
-
-summary_2025 |>
-  ggplot(aes(x=avg_opp_elo, y=final_elo)) +
-  geom_point(show.legend = FALSE) +
-  geom_smooth(method = 'lm', formula = 'y ~ x', se = TRUE, show.legend = FALSE) +
-  theme_dark()
-```
-
-notes to fix above graphic:
-
-- add in labels via geom_label and chr vector of labels for team names
-
-- labs()
-
-## Exporting to csv
-
-The `summary_2025` data frame can be exported as a csv file using the `readr` package's `write_csv()` function. The CSV can be validated by re-importing it as a new data frame and knitting a table to display the CSV file's contents.
+The `summary_2025` data frame can be exported as a .csv file using the `readr` package's `write_csv()` function. The .csv file can be validated by re-importing it as a new data frame and knitting a table to display the .csv file's contents.
 
 ```{r export-to-csv}
 #| echo:  true
