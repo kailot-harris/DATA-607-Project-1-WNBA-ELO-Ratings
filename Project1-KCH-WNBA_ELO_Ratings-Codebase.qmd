@@ -136,6 +136,29 @@ away_teams <- unique(full_df$away_team_display_name)
 # TEAM COLLIER removed
 ```
 
+## Troubleshooting Extra Lynx vs. Fever Game
+
+```{r post-mortem-extra-game}
+#| echo: false
+#| warning: false
+#| message: false
+
+tmp <- full_df |> 
+  count(game_id) |> 
+  filter(n > 1)
+
+knitr::kable(tmp, caption = "Check for Duplicate Games")
+
+tmp <- full_df |>
+  filter(
+    (home_team_display_name == "Minnesota Lynx" & away_team_display_name == "Indiana Fever") |
+      (home_team_display_name == "Indiana Fever" & away_team_display_name == "Minnesota Lynx")
+  ) |>
+  select(game_id, game_date, home_team_display_name, away_team_display_name, home_win)
+
+knitr::kable(tmp, caption = "Check for Extra Games")
+```
+
 ## Calculating Running Elo Ratings
 
 A running Elo rating is calculated using the [Elo R package](https://cran.r-project.org/web/packages/elo/index.html) with documentation here: . The `elo.run()` function will be used, which is documented in this [specific vignette](https://cran.r-project.org/web/packages/elo/vignettes/running_elos.html). The initial K value has been set to a value of 50. In the github article above, the author noted that varying K between 20 and 50 did not fundamentally alter the accuracy of their Elo-based predictions. Since the WNBA season is relatively short (44 games) compared to the NBA (82 games), a high, stable K value is preferred so that the Elo ratings are more responsive to intra-season momentum. The baseline Elo rating for the beginning of the 2025 season was set to 1300, as is convention for NBA Elo ratings analysis. Future work could perform experiments where these two parameters are tuned to find optimal settings for predictive accuracy.
@@ -224,7 +247,7 @@ all_teams_df <- bind_rows(home_team_df, away_team_df) |>
 
 ## Summarizing Season Results
 
-The `summary_2025` data frame is formed via the `tidyverse` package's `summarize()` function, which (as opposed to window functions) flattens rows into a single aggregated row. New data frames also contained summary data for the top 3 teams (`top_3_df`) and bottom 3 teams (`bottom_3_df`) in the WNBA for the 2025 season. The combined `ext_6_df` was constructed for verification and visualization purposes, and it's output is displayed below.
+The `summary_2025` data frame is formed via the `tidyverse` package's `summarize()` function, which (as opposed to window functions) flattens rows into a single aggregated row. New data frames also contained summary data for the top 3 teams (`top_3_df`) and bottom 3 teams (`bottom_3_df`) in the WNBA for the 2025 season. The combined `ext_6_df` was constructed for verification and visualization purposes, and its output is displayed below.
 
 ```{r summarize-season}
 #| echo:  true
@@ -250,7 +273,9 @@ knitr::kable(ext_6_df, caption = "2025 WNBA Compressed ELO Summary Output")
 
 ## Visualizing Season Results
 
-```{r viz-ELO-Wins}
+First, a plot showing the linearity of a Total Wins vs. Elo Ratings is constructed. Here, custom formatting is achieved using the `theme()` function.
+
+```{r viz-Elo-Wins}
 #| echo: true
 #| warning: false
 #| message: false
@@ -277,11 +302,9 @@ summary_2025 |>
   )
 ```
 
-notes to fix above graphic:
+Next, the Elo trajectories for the top 3 and bottom 3 teams for the WNBA 2025 season are shown.
 
-- 
-
-```{r viz-ELO-trajectory}
+```{r viz-Elo-trajectory}
 #| echo: true
 #| warning: false
 #| message: false
@@ -309,6 +332,8 @@ ext_6_game_df |>
     axis.text.x = element_text(size = 11, face = "bold")
   )
 ```
+
+Finally, a column chart showing the victories with the largest upsets (as indicated by greatest Elo differential pre- and post-game) was rendered. Here, a `geom_text()` layer was utilized to add specific labels to the figure. Additionally, the scaling of the x-axis was reapplied.
 
 ```{r viz-upsets}
 #| echo: true
@@ -360,29 +385,6 @@ write_csv(summary_2025, "wnba_elo_summary_2025.csv")
 
 check_df <- read_csv("wnba_elo_summary_2025.csv")
 knitr::kable(check_df, caption = "Validated 2025 WNBA Elo Summary Output")
-```
-
-## Troubleshooting Extra Lynx vs. Fever Game
-
-```{r post-mortem-extra-game}
-#| echo: false
-#| warning: false
-#| message: false
-
-tmp <- full_df |> 
-  count(game_id) |> 
-  filter(n > 1)
-
-knitr::kable(tmp, caption = "Check for Duplicate Games")
-
-tmp <- full_df |>
-  filter(
-    (home_team_display_name == "Minnesota Lynx" & away_team_display_name == "Indiana Fever") |
-      (home_team_display_name == "Indiana Fever" & away_team_display_name == "Minnesota Lynx")
-  ) |>
-  select(game_id, game_date, home_team_display_name, away_team_display_name, home_win)
-
-knitr::kable(tmp, caption = "Check for Extra Games")
 ```
 
 # Findings and Recommendations

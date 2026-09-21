@@ -370,6 +370,74 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># TEAM COLLIER removed</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
+<section id="troubleshooting-extra-lynx-vs.-fever-game" class="level2">
+<h2 class="anchored" data-anchor-id="troubleshooting-extra-lynx-vs.-fever-game">Troubleshooting Extra Lynx vs.&nbsp;Fever Game</h2>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top">
+<caption>Check for Duplicate Games</caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">game_id</th>
+<th style="text-align: right;">away_team_id</th>
+<th style="text-align: right;">n</th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</div>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Check for Extra Games</caption>
+<colgroup>
+<col style="width: 14%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">away_team_id</th>
+<th style="text-align: right;">game_id</th>
+<th style="text-align: left;">game_date</th>
+<th style="text-align: left;">home_team_display_name</th>
+<th style="text-align: left;">away_team_display_name</th>
+<th style="text-align: right;">home_win</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">401736343</td>
+<td style="text-align: left;">2025-08-22</td>
+<td style="text-align: left;">Indiana Fever</td>
+<td style="text-align: left;">Minnesota Lynx</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">401736351</td>
+<td style="text-align: left;">2025-08-24</td>
+<td style="text-align: left;">Minnesota Lynx</td>
+<td style="text-align: left;">Indiana Fever</td>
+<td style="text-align: right;">1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">401736389</td>
+<td style="text-align: left;">2025-09-09</td>
+<td style="text-align: left;">Indiana Fever</td>
+<td style="text-align: left;">Minnesota Lynx</td>
+<td style="text-align: right;">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
 <section id="calculating-running-elo-ratings" class="level2">
 <h2 class="anchored" data-anchor-id="calculating-running-elo-ratings">Calculating Running Elo Ratings</h2>
 <p>A running Elo rating is calculated using the <a href="https://cran.r-project.org/web/packages/elo/index.html">Elo R package</a> with documentation here: . The <code>elo.run()</code> function will be used, which is documented in this <a href="https://cran.r-project.org/web/packages/elo/vignettes/running_elos.html">specific vignette</a>. The initial K value has been set to a value of 50. In the github article above, the author noted that varying K between 20 and 50 did not fundamentally alter the accuracy of their Elo-based predictions. Since the WNBA season is relatively short (44 games) compared to the NBA (82 games), a high, stable K value is preferred so that the Elo ratings are more responsive to intra-season momentum. The baseline Elo rating for the beginning of the 2025 season was set to 1300, as is convention for NBA Elo ratings analysis. Future work could perform experiments where these two parameters are tuned to find optimal settings for predictive accuracy.</p>
@@ -442,7 +510,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="summarizing-season-results" class="level2">
 <h2 class="anchored" data-anchor-id="summarizing-season-results">Summarizing Season Results</h2>
-<p>The <code>summary_2025</code> data frame is formed via the <code>tidyverse</code> package’s <code>summarize()</code> function, which (as opposed to window functions) flattens rows into a single aggregated row. New data frames also contained summary data for the top 3 teams (<code>top_3_df</code>) and bottom 3 teams (<code>bottom_3_df</code>) in the WNBA for the 2025 season. The combined <code>ext_6_df</code> was constructed for verification and visualization purposes, and it’s output is displayed below.</p>
+<p>The <code>summary_2025</code> data frame is formed via the <code>tidyverse</code> package’s <code>summarize()</code> function, which (as opposed to window functions) flattens rows into a single aggregated row. New data frames also contained summary data for the top 3 teams (<code>top_3_df</code>) and bottom 3 teams (<code>bottom_3_df</code>) in the WNBA for the 2025 season. The combined <code>ext_6_df</code> was constructed for verification and visualization purposes, and its output is displayed below.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>summary_2025 <span class="ot">&lt;-</span> all_teams_df <span class="sc">|&gt;</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(team) <span class="sc">|&gt;</span></span>
@@ -536,6 +604,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="visualizing-season-results" class="level2">
 <h2 class="anchored" data-anchor-id="visualizing-season-results">Visualizing Season Results</h2>
+<p>First, a plot showing the linearity of a Total Wins vs.&nbsp;Elo Ratings is constructed. Here, custom formatting is achieved using the <code>theme()</code> function.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>summary_2025 <span class="sc">|&gt;</span> </span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>final_elo, <span class="at">y=</span>total_wins)) <span class="sc">+</span></span>
@@ -560,15 +629,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Project1-KCH-WNBA_ELO_Ratings-Codebase_files/figure-html/viz-ELO-Wins-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Project1-KCH-WNBA_ELO_Ratings-Codebase_files/figure-html/viz-Elo-Wins-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p>notes to fix above graphic:</p>
-<ul>
-<li></li>
-</ul>
+<p>Next, the Elo trajectories for the top 3 and bottom 3 teams for the WNBA 2025 season are shown.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>ext_6_names <span class="ot">&lt;-</span> <span class="fu">unique</span>(ext_6_df<span class="sc">$</span>team)</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -595,11 +661,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="Project1-KCH-WNBA_ELO_Ratings-Codebase_files/figure-html/viz-ELO-trajectory-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="Project1-KCH-WNBA_ELO_Ratings-Codebase_files/figure-html/viz-Elo-trajectory-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
+<p>Finally, a column chart showing the victories with the largest upsets (as indicated by greatest Elo differential pre- and post-game) was rendered. Here, a <code>geom_text()</code> layer was utilized to add specific labels to the figure. Additionally, the scaling of the x-axis was reapplied.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>upsets <span class="ot">&lt;-</span> full_elo_df <span class="sc">|&gt;</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
@@ -771,74 +838,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td style="text-align: right;">34</td>
 <td style="text-align: right;">1096</td>
 <td style="text-align: right;">1311</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</section>
-<section id="troubleshooting-extra-lynx-vs.-fever-game" class="level2">
-<h2 class="anchored" data-anchor-id="troubleshooting-extra-lynx-vs.-fever-game">Troubleshooting Extra Lynx vs.&nbsp;Fever Game</h2>
-<div class="cell">
-<div class="cell-output-display">
-<table class="caption-top">
-<caption>Check for Duplicate Games</caption>
-<thead>
-<tr class="header">
-<th style="text-align: right;">game_id</th>
-<th style="text-align: right;">away_team_id</th>
-<th style="text-align: right;">n</th>
-</tr>
-</thead>
-<tbody>
-</tbody>
-</table>
-</div>
-<div class="cell-output-display">
-<table class="caption-top table table-sm table-striped small">
-<caption>Check for Extra Games</caption>
-<colgroup>
-<col style="width: 14%">
-<col style="width: 11%">
-<col style="width: 12%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 10%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: right;">away_team_id</th>
-<th style="text-align: right;">game_id</th>
-<th style="text-align: left;">game_date</th>
-<th style="text-align: left;">home_team_display_name</th>
-<th style="text-align: left;">away_team_display_name</th>
-<th style="text-align: right;">home_win</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">401736343</td>
-<td style="text-align: left;">2025-08-22</td>
-<td style="text-align: left;">Indiana Fever</td>
-<td style="text-align: left;">Minnesota Lynx</td>
-<td style="text-align: right;">0</td>
-</tr>
-<tr class="even">
-<td style="text-align: right;">5</td>
-<td style="text-align: right;">401736351</td>
-<td style="text-align: left;">2025-08-24</td>
-<td style="text-align: left;">Minnesota Lynx</td>
-<td style="text-align: left;">Indiana Fever</td>
-<td style="text-align: right;">1</td>
-</tr>
-<tr class="odd">
-<td style="text-align: right;">8</td>
-<td style="text-align: right;">401736389</td>
-<td style="text-align: left;">2025-09-09</td>
-<td style="text-align: left;">Indiana Fever</td>
-<td style="text-align: left;">Minnesota Lynx</td>
-<td style="text-align: right;">1</td>
 </tr>
 </tbody>
 </table>
