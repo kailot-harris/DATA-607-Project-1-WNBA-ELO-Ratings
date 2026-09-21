@@ -192,32 +192,32 @@ full_elo_df <-full_elo_df |>
   )
 ```
 
-```{r win-totals}
+```{r split-df-2}
 
 #| echo:  true
 #| message:  false
 #| warning:  false
 
-full_elo_df <- full_elo_df |>
-  group_by(home_team_display_name) |>
-  arrange(game_date) |>
-  mutate(total_home_wins = sum(home_win),
-         total_home_games = n(),
-         total_home_losses = total_home_games - total_home_wins
-  )
-
-view(full_elo_df)
-
-full_elo_df <- full_elo_df |>
-  ungroup() |>
-  group_by(away_team_display_name) |>
-  arrange(game_date) |>
-  mutate(total_away_losses = sum(home_win),
-         total_away_games = n(),
-         total_away_wins = total_away_games - total_away_losses,
-         total_wins = total_away_wins + total_home_wins,
-         total_games = total_home_games+total_away_games
+home_team_df <- full_elo_df |>
+  select(game_date,
+         team = home_team_display_name,
+         opp_team = away_team_display_name,
+         win = home_win,
+         team_elo_pre = home_elo_pre,
+         team_elo_post = home_elo_post,
+         opp_elo_pre = away_elo_pre
          )
 
-view(full_elo_df)
+away_team_df <- full_elo_df |>
+  mutate(away_win = if_else(home_win ==0,1,0)) |>
+  select(game_date,
+         team = away_team_display_name,
+         opp_team = home_team_display_name,
+         win = away_win,
+         team_elo_pre = away_elo_pre,
+         team_elo_post = away_elo_post,
+         opp_elo_pre = home_elo_pre
+  )
+all_teams_df <- bind_rows(home_team_df, away_team_df) |>
+  arrange(team, game_date)
 ```
