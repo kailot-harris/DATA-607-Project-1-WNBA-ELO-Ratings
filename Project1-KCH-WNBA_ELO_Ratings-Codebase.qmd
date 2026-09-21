@@ -297,6 +297,8 @@ First, a plot showing the linearity of Total Wins vs. Elo Ratings is constructed
 #| echo: true
 #| warning: false
 #| message: false
+#| fig-height: 6
+#| fig-width: 9
 
 summary_2025 |> 
   ggplot(aes(x=final_elo, y=total_wins)) +
@@ -326,6 +328,8 @@ Next, the Elo trajectories for the top 3 and bottom 3 teams for the WNBA 2025 se
 #| echo: true
 #| warning: false
 #| message: false
+#| fig-height: 6
+#| fig-width: 9
 
 ext_6_names <- unique(ext_6_df$team)
 
@@ -416,3 +420,5 @@ The Elo trajectories in Figure 2 demonstrate how the performance of top-tier tea
 The upset analysis presented in Figure 3 demonstrates that large Elo differentials between teams do not always translate to a predictable outcome. The Connecticut Sun, a team ranked 3rd to last in the 2025 season, secured three major upsets over playoff-bound teams such as the Seattle Storm, Phoenix Mercury, and New York Liberty, despite high pre-game Elo differentials.
 
 There are several avenues through which this work can be extended and refined. Namely, the K-factor analysis previously suggested could be useful in calibrating the Elo calculations to better mirror WNBA dynamics. Another series of experiments could vary the baseline Elo rating for all teams and determine a representative value for the WNBA context. Additionally, a natural extension could be using this framework for predictive analysis. Using regular-season Elo ratings to predict playoff outcomes could be increasingly informative, particularly as the 2026 WNBA playoffs are soon approaching. Finally, the scope for this project was limited to the 2025 WNBA regular season. Future work should aim to convert this approach into a reusable, durable formula that can compute regular season Elo ratings for any of the WNBA seasons between 1997 and the present. Extending the project to multi-year horizons would require the application of a dampening calculation to regress end-of-season Elo ratings back toward a mean or baseline value before the subsequent season's running Elo ratings are calculated. Common approaches to this specific inter-season problem have employed exponential decay functions for mean reversion of each team's end-of-season Elo rating to account for off-season roster dynamics and rest.
+
+Lastly, the Elo trajectories in Figure 2 reveal important late-season momentum that win/loss totals can miss. While the Minnesota Lynx maintained the highest Elo rating for much of the season, the Las Vegas Aces demonstrated unparalleled momentum moving into the playoffs, securing the highest Elo rating by late August. That momentum likely helped the Aces in their path to winning the WNBA Championship in October 2025.
