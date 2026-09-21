@@ -192,7 +192,7 @@ full_elo_df <-full_elo_df |>
   )
 ```
 
-```{r split-df-2}
+```{r split-recombine-df}
 
 #| echo:  true
 #| message:  false
@@ -209,7 +209,7 @@ home_team_df <- full_elo_df |>
          )
 
 away_team_df <- full_elo_df |>
-  mutate(away_win = if_else(home_win ==0,1,0)) |>
+  mutate(away_win = 1-home_win) |>
   select(game_date,
          team = away_team_display_name,
          opp_team = home_team_display_name,
@@ -220,4 +220,50 @@ away_team_df <- full_elo_df |>
   )
 all_teams_df <- bind_rows(home_team_df, away_team_df) |>
   arrange(team, game_date)
+```
+
+```{r summarize-season}
+
+#| echo:  true
+#| message:  false
+#| warning:  false
+
+summary_2025 <- all_teams_df |>
+  group_by(team) |>
+  summarize(total_games = n(),
+            total_wins = sum(win),
+            total_losses = total_games - total_wins, #not an independent column, nice for summary
+            final_elo = last(team_elo_post),
+            avg_opp_elo = mean(opp_elo_pre)
+            ) |>
+  arrange(desc(total_wins))
+
+```
+
+```{r viz-1}
+
+summary_2025 |> ggplot(aes(x=final_elo, y=total_wins)) +
+  geom_point(alpha = 0.8, show.legend = FALSE) +
+  geom_smooth(method = lm, se = TRUE) +
+  theme_minimal()
+```
+
+notes to fix above graphic:
+
+- add in labels via geom_label and chr vector of labels for team names
+
+- labs()
+
+- ungrouped smooth line?
+
+```{r viz-2}
+top_5_teams_df <- all_teams_df |>
+  filter(team %in% c(""))
+  
+
+
+top_5_teams_df |>
+  ggplot(aes(x=game_date, y=team_elo_post, color = team)) +
+  geom_line() +
+  theme_minimal()
 ```
