@@ -22,7 +22,6 @@ The original project assignment, related to a chess tournament, asked for specif
 # Codebase
 
 ```{r libraries-packages}
-
 #| echo:  false
 #| warning:  false
 #| message:  false
@@ -38,7 +37,6 @@ library(elo)
 To maintain the reduced scope of analyzing only the 2025 season, a request through the `wehoop` R package is made for team-level box-score data in 2025.
 
 ```{r data-import}
-
 #| echo:  true
 #| warning:  false
 #| message:  false
@@ -51,7 +49,6 @@ box <- wehoop::load_wnba_team_box(2025)
 The data frame has clean naming conventions applied via the `janitor` package's `clean_names()` function. Then only the relevant columns are selected, omitting superfluous columns that are not meaningful in this methodology.
 
 ```{r data-tidying}
-
 #| echo:  true
 #| warning:  false
 #| message:  false
@@ -77,7 +74,6 @@ df <- box |>
 The data frame is split into two frames: one for away teams and the other for home teams.
 
 ```{r split-data}
-
 #| echo:  true
 #| warning:  false
 #| message:  false
@@ -102,8 +98,9 @@ home_df <- df |>
 
 The two split data frames are then rejoined around a common `game_id` key. Inspecting the results revealed that "TEAM CLARK" and "TEAM COLLIER" are present in the home team display names and away team display names, respectively. This likely represents the All-Star Game match-up, and this game can be removed from the data frame by filtering in all teams with display names that are neither "TEAM CLARK" nor "TEAM COLLIER". The success of this step is confirmed via the `unique()` function.
 
-```{r join-dfs}
+In an initial run of this pipeline, two teams finished the season with 45 games played, compared to the overwhelming mode of 44 total games played. The Minnesota Lynx and the Indiana Fever had an extra game compared to other teams. No duplicate game ids were found. Instead, a data discrepancy in the ESPN source data was identified: a Commissioner's Cup game (specifically the championship game betwen the Minnesota Lynx and Indian Fever) was included in the regular season data set. This game was removed from the data frame by filtering in all games with a `game_id` not equal to that game's `game_id`.
 
+```{r join-dfs}
 #| echo:  true
 #| warning:  false
 #| message:  false
@@ -119,22 +116,23 @@ full_df <- inner_join(away_df, home_df, by = "game_id") |>
          home_win
          )
 
-#unique(full_df$home_team_display_name)
+home_teams <- unique(full_df$home_team_display_name)
 # TEAM CLARK present
-#unique(full_df$away_team_display_name)
+away_teams <- unique(full_df$away_team_display_name)
 # TEAM COLLIER present
 
 full_df <- full_df |>
-  filter(away_team_display_name != "TEAM COLLIER" & home_team_display_name != "TEAM CLARK")
+  filter(away_team_display_name != "TEAM COLLIER",
+         home_team_display_name != "TEAM CLARK",
+         game_id != 401736430   # Exclude Commissioner's Cup Championship Game
+         )
+
 
 home_teams <- unique(full_df$home_team_display_name)
 # TEAM CLARK removed
 
 away_teams <- unique(full_df$away_team_display_name)
 # TEAM COLLIER removed
-
-all_teams <- unique(c(home_teams, away_teams))
-# all teams listed together
 ```
 
 ## Calculating Running ELO Ratings
@@ -142,7 +140,6 @@ all_teams <- unique(c(home_teams, away_teams))
 A running ELO rating is calculated using the ELO R package with documentation here: <https://cran.r-project.org/web/packages/elo/index.html>. The elo.run() function will be used, which is documented in this specific vignette: <https://cran.r-project.org/web/packages/elo/vignettes/running_elos.html>.
 
 ```{r ELO-calcs-1}
-
 #| echo: true
 #| warning: false
 #| message: false
@@ -162,8 +159,7 @@ elo_results <- as.data.frame(elo_run)
 ## Tidying ELO Results
 
 ```{r elo-tidying}
-
-#| echo = true
+#| echo: true
 #| warning:  false
 #| message:  false
 
@@ -193,7 +189,6 @@ full_elo_df <-full_elo_df |>
 ```
 
 ```{r split-recombine-df}
-
 #| echo:  true
 #| message:  false
 #| warning:  false
@@ -225,7 +220,6 @@ all_teams_df <- bind_rows(home_team_df, away_team_df) |>
 ## Summarizing Season Results
 
 ```{r summarize-season}
-
 #| echo:  true
 #| message:  false
 #| warning:  false
@@ -240,9 +234,9 @@ summary_2025 <- all_teams_df |>
             ) |>
   arrange(desc(total_wins))
 
-top_3_df <-  head(summary_2025,3)
-bottom_3_df <- tail(summary_2025,3)
-ext_6_df <- bind_rows(top_3_df, bottom_3_df)
+top_3_df <-  head(summary_2025,3) # top 3 teams summary
+bottom_3_df <- tail(summary_2025,3) # bottom 3 teams summary
+ext_6_df <- bind_rows(top_3_df, bottom_3_df) #combine into 6 team divergent summary
 ```
 
 ## Visualizing Season Results
@@ -253,7 +247,12 @@ summary_2025 |>
   ggplot(aes(x=final_elo, y=total_wins)) +
   geom_point(alpha = 0.8, show.legend = FALSE) +
   geom_smooth(formula = 'y ~ x', method = lm, se = TRUE) +
-  theme_minimal()
+  labs(title="Wins vs. End of Season ELO Rating (2025)",
+       subtitle = "data sourced from wehoop R package", 
+       y = "Total Wins", 
+       x = "Final ELO Rating"
+       ) +
+  theme_dark()
 ```
 
 notes to fix above graphic:
@@ -273,9 +272,10 @@ ext_6_game_df <- all_teams_df |>
 
 ext_6_game_df |>
   ggplot(aes(x=game_date, y=team_elo_post, color = team)) +
-  geom_point(alpha = 0.5, show.legend = FALSE) +
-  geom_smooth(method = 'loess', formula = 'y~x', show.legend = FALSE) +
-  theme_minimal()
+  geom_point(alpha = 0.5, show.legend = FALSE, size = 2.5) +
+  geom_smooth(method = 'loess', formula = 'y~x', show.legend = TRUE, linewidth = 1.5) +
+  labs(title = "ELO Trajectory Through 2025 Season for Top and Bottom 3 teams", subtitle = "data sourced from wehoop R package", y= "ELO Rating", x= "Game Date (2025)", color = "Team") +
+  theme_dark()
 ```
 
 notes to fix above graphic:
@@ -290,7 +290,7 @@ summary_2025 |>
   ggplot(aes(x=avg_opp_elo, y=total_losses)) +
   geom_point(alpha=0.8, show.legend = FALSE) +
   geom_smooth(method = 'lm', formula = 'y ~ x', show.legend = FALSE) +
-  theme_minimal()
+  theme_dark()
 ```
 
 notes to fix above graphic:
@@ -307,7 +307,7 @@ summary_2025 |>
   ggplot(aes(x=avg_opp_elo, y=final_elo)) +
   geom_point(show.legend = FALSE) +
   geom_smooth(method = 'lm', formula = 'y ~ x', se = TRUE, show.legend = FALSE) +
-  theme_minimal()
+  theme_dark()
 
 ```
 
@@ -323,10 +323,32 @@ The `summary_2025` data frame can be exported as a csv file using the `readr` pa
 
 ```{r export-to-csv}
 
+#| echo:  true
+#| message:  false
+#| warning:  false
+
 write_csv(summary_2025, "wnba_elo_summary_2025.csv")
 
 check_df <- read_csv("wnba_elo_summary_2025.csv")
 knitr::kable(check_df, caption = "Validated 2025 WNBA Elo Summary Output")
+```
+
+```{r post-mortem-extra-game}
+
+#|echo: false
+#|warning: false
+#|message: false
+
+full_df |> 
+  count(game_id) |> 
+  filter(n > 1)
+
+full_df |>
+  filter(
+    (home_team_display_name == "Minnesota Lynx" & away_team_display_name == "Indiana Fever") |
+      (home_team_display_name == "Indiana Fever" & away_team_display_name == "Minnesota Lynx")
+  ) |>
+  select(game_id, game_date, home_team_display_name, away_team_display_name, home_win)
 ```
 
 # Findings and Recommendations
