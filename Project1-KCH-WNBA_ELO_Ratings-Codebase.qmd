@@ -33,9 +33,9 @@ library(wehoop)
 library(elo)
 ```
 
-## Data Import from wehoop
+## Importing Data from wehoop
 
-To maintain the reduced scope of analyzing only the 2025 season, a request through the `wehoop` R package is made.
+To maintain the reduced scope of analyzing only the 2025 season, a request through the `wehoop` R package is made for team-level box-score data in 2025.
 
 ```{r data-import}
 
@@ -46,7 +46,7 @@ To maintain the reduced scope of analyzing only the 2025 season, a request throu
 box <- wehoop::load_wnba_team_box(2025)
 ```
 
-## Data Tidying and Pruning
+## Tidying and Pruning Data
 
 ```{r data-tidying}
 
@@ -67,8 +67,6 @@ df <- box |>
          team_winner, 
          opponent_team_id, 
          opponent_team_display_name)
-
-head(df)
 ```
 
 ```{r ELO-init}
@@ -124,23 +122,23 @@ full_df <- inner_join(away_df, home_df, by = "game_id") |>
          home_win
          )
 
-unique(full_df$home_team_display_name)
+#unique(full_df$home_team_display_name)
 # TEAM CLARK present
-unique(full_df$away_team_display_name)
+#unique(full_df$away_team_display_name)
 # TEAM COLLIER present
 
 full_df <- full_df |>
   filter(away_team_display_name != "TEAM COLLIER" & home_team_display_name != "TEAM CLARK")
 
-unique(full_df$home_team_display_name)
+#unique(full_df$home_team_display_name)
 # TEAM CLARK removed
-unique(full_df$away_team_display_name)
+#unique(full_df$away_team_display_name)
 # TEAM COLLIER removed
 ```
 
-## ELO calculations
+## Calculating Running ELO Ratings
 
-A running ELO rating is calculated using the ELO R package
+A running ELO rating is calculated using the ELO R package with documentation here: <https://cran.r-project.org/web/packages/elo/index.html>. The elo.run() function will be used, which is documented in this specific vignette: <https://cran.r-project.org/web/packages/elo/vignettes/running_elos.html>.
 
 ```{r ELO-calcs-1}
 
@@ -148,8 +146,8 @@ A running ELO rating is calculated using the ELO R package
 #| warning = false
 #| message = false
 
-K <- as.integer(30)
-default_elo <- as.integer(1000)
+K <- as.integer(50)
+default_elo <- as.integer(1300)
 
 elo_run <- elo.run(
   formula = home_win ~ home_team_display_name + away_team_display_name,
@@ -159,6 +157,8 @@ elo_run <- elo.run(
 )
 elo_results <- as.data.frame(elo_run)
 ```
+
+## Tidying ELO Results
 
 ```{r elo-tidying}
 
