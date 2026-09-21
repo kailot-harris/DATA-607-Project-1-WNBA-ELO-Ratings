@@ -26,10 +26,12 @@ The original project assignment, related to a chess tournament, asked for specif
 #| warning:  false
 #| message:  false
 
-
 library(tidyverse)
 library(wehoop)
 library(elo)
+library(thematic)
+
+thematic::thematic_rmd()
 ```
 
 ## Importing Data from wehoop
@@ -84,7 +86,7 @@ away_df <- df |>
          game_date, 
          away_team_id = team_id, 
          away_team_display_name = team_display_name,
-         away_team_winner = team_winner,
+         away_team_winner = team_winner
          )
 
 home_df <- df |>
@@ -241,7 +243,10 @@ ext_6_df <- bind_rows(top_3_df, bottom_3_df) #combine into 6 team divergent summ
 
 ## Visualizing Season Results
 
-```{r viz-1}
+```{r viz-ELO-Wins}
+#|echo: true
+#|warning: false
+#|message: false
 
 summary_2025 |> 
   ggplot(aes(x=final_elo, y=total_wins)) +
@@ -252,7 +257,14 @@ summary_2025 |>
        y = "Total Wins", 
        x = "Final ELO Rating"
        ) +
-  theme_dark()
+  theme_dark() +
+  theme(
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    plot.title = element_text(size = 15, face = "bold"),
+    axis.text.y = element_text(size = 11, face = "bold"),
+    axis.text.x = element_text(size = 11, face = "bold")
+  )
 ```
 
 notes to fix above graphic:
@@ -261,7 +273,7 @@ notes to fix above graphic:
 
 - labs()
 
-```{r viz-2}
+```{r viz-ELO-trajectory}
 ext_6_names <- unique(ext_6_df$team)
 
 ext_6_game_df <- all_teams_df |>
@@ -272,17 +284,47 @@ ext_6_game_df <- all_teams_df |>
 
 ext_6_game_df |>
   ggplot(aes(x=game_date, y=team_elo_post, color = team)) +
-  geom_point(alpha = 0.5, show.legend = FALSE, size = 2.5) +
-  geom_smooth(method = 'loess', formula = 'y~x', show.legend = TRUE, linewidth = 1.5) +
-  labs(title = "ELO Trajectory Through 2025 Season for Top and Bottom 3 teams", subtitle = "data sourced from wehoop R package", y= "ELO Rating", x= "Game Date (2025)", color = "Team") +
+  geom_point(alpha = 0.5, show.legend = FALSE, size = 2.75) +
+  geom_smooth(method = 'loess', formula = 'y~x', show.legend = TRUE, linewidth = 1.75) +
+  labs(title = "ELO Trajectory Through 2025 Season for Top and Bottom 3 Teams", subtitle = "data sourced from wehoop R package", y= "ELO Rating", x= "Game Date (2025)", color = "Team") +
   theme_dark()
 ```
 
-notes to fix above graphic:
+```{r viz-upsets}
+#|echo: true
+#|warning: false
+#|message: false
+#|fig-height: 9
+#|fig-width: 6
 
-- consider adding legend for team name
 
-- labs()
+upsets <- full_elo_df |>
+  mutate(
+    winning_team = if_else(home_win == 1, home_team_display_name, away_team_display_name),
+    losing_team = if_else(home_win == 1, away_team_display_name, home_team_display_name),
+    elo_diff = if_else(home_win == 1, abs(home_elo_post - home_elo_pre), abs(away_elo_post - away_elo_pre)),
+    matchup = paste0(winning_team," over ",losing_team,"\n(date: ",game_date,")")
+  ) |>
+  arrange(desc(elo_diff))
+
+upsets <- head(upsets, 6)
+
+upsets |> ggplot(aes(x=elo_diff, y=reorder(matchup, elo_diff))) +
+  geom_col(fill = "#FA4616", width = 0.7, alpha = 0.9) +
+  geom_text(aes(label = paste("+", round(elo_diff, 0), " pts")), 
+            hjust = 1.15, size = 4, fontface = "bold") +
+  labs(title = "Largest Upset Victories in 2025 Season", subtitle = "(ranked by ELO gain)", y=NULL, x = "ELO Gain", caption = "data sourced from wehoop R package") +
+  theme_dark() +
+  scale_x_continuous(
+    limits = c(0, 50)) +
+  theme(
+    plot.title.position = "plot",
+    plot.caption.position = "plot",
+    plot.title = element_text(size = 15, face = "bold"),
+    axis.text.y = element_text(size = 11, face = "bold"),
+    axis.text.x = element_text(size = 11, face = "bold")
+    )
+```
 
 ```{r viz-3}
 
@@ -308,7 +350,6 @@ summary_2025 |>
   geom_point(show.legend = FALSE) +
   geom_smooth(method = 'lm', formula = 'y ~ x', se = TRUE, show.legend = FALSE) +
   theme_dark()
-
 ```
 
 notes to fix above graphic:
@@ -322,7 +363,6 @@ notes to fix above graphic:
 The `summary_2025` data frame can be exported as a csv file using the `readr` package's `write_csv()` function. The CSV can be validated by re-importing it as a new data frame and knitting a table to display the CSV file's contents.
 
 ```{r export-to-csv}
-
 #| echo:  true
 #| message:  false
 #| warning:  false
@@ -334,16 +374,15 @@ knitr::kable(check_df, caption = "Validated 2025 WNBA Elo Summary Output")
 ```
 
 ```{r post-mortem-extra-game}
+#| echo: false
+#| warning: false
+#| message: false
 
-#|echo: false
-#|warning: false
-#|message: false
-
-full_df |> 
+tmp <- full_df |> 
   count(game_id) |> 
   filter(n > 1)
 
-full_df |>
+tmp <- full_df |>
   filter(
     (home_team_display_name == "Minnesota Lynx" & away_team_display_name == "Indiana Fever") |
       (home_team_display_name == "Indiana Fever" & away_team_display_name == "Minnesota Lynx")
