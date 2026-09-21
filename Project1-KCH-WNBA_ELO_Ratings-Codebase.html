@@ -586,6 +586,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="troubleshooting-extra-lynx-vs.-fever-game" class="level2">
 <h2 class="anchored" data-anchor-id="troubleshooting-extra-lynx-vs.-fever-game">Troubleshooting Extra Lynx vs.&nbsp;Fever Game</h2>
+<p>A temporary data frame was constructed to display debugging results. First, the <code>count()</code> function was utilized to confirm no duplicate games existed in the <code>full_df</code> data frame. Second, the temporary data frame inspected only games between the Minnesota Lynx and Indiana Fever, confirming that only 3 regular season games occurred between the pairing. The debugging results are presented in tables below.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>tmp <span class="ot">&lt;-</span> full_df <span class="sc">|&gt;</span> </span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(game_id) <span class="sc">|&gt;</span> </span>
@@ -833,7 +834,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="visualizing-season-results" class="level2">
 <h2 class="anchored" data-anchor-id="visualizing-season-results">Visualizing Season Results</h2>
-<p>First, a plot showing the linearity of a Total Wins vs.&nbsp;Elo Ratings is constructed. Here, custom formatting is achieved using the <code>theme()</code> function.</p>
+<p>First, a plot showing the linearity of Total Wins vs.&nbsp;Elo Ratings is constructed. Here, custom formatting is achieved using the <code>theme()</code> function.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>summary_2025 <span class="sc">|&gt;</span> </span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x=</span>final_elo, <span class="at">y=</span>total_wins)) <span class="sc">+</span></span>
