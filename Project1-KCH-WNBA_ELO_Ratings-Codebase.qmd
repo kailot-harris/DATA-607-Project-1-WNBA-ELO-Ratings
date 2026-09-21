@@ -138,7 +138,7 @@ away_teams <- unique(full_df$away_team_display_name)
 
 ## Calculating Running Elo Ratings
 
-A running Elo rating is calculated using the [Elo R package](https://cran.r-project.org/web/packages/elo/index.html) with documentation here: . The `elo.run()` function will be used, which is documented in this [specific vignette](https://cran.r-project.org/web/packages/elo/vignettes/running_elos.html). The initial K value has been set to a value of 50.
+A running Elo rating is calculated using the [Elo R package](https://cran.r-project.org/web/packages/elo/index.html) with documentation here: . The `elo.run()` function will be used, which is documented in this [specific vignette](https://cran.r-project.org/web/packages/elo/vignettes/running_elos.html). The initial K value has been set to a value of 50. In the github article above, the author noted that varying K between 20 and 50 did not fundamentally alter the accuracy of their Elo-based predictions. Since the WNBA season is relatively short (44 games) compared to the NBA (82 games), a high, stable K value is preferred so that the Elo ratings are more responsive to intra-season momentum. The baseline Elo rating for the beginning of the 2025 season was set to 1300, as is convention for NBA Elo ratings analysis. Future work could perform experiments where these two parameters are tuned to find optimal settings for predictive accuracy.
 
 ```{r ELO-calcs-1}
 #| echo: true
