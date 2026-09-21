@@ -358,7 +358,7 @@ Finally, a column chart showing the victories with the largest upsets (as indica
 #| warning: false
 #| message: false
 #| fig-height: 6
-#| fig-width: 6
+#| fig-width: 9
 
 upsets <- full_elo_df |>
   mutate(
@@ -407,4 +407,12 @@ knitr::kable(check_df, caption = "Validated 2025 WNBA Elo Summary Output")
 
 # Findings and Recommendations
 
-There were several data quirks encountered in this project. First, the WNBA All-Star game was included as a regular season game within the source ESPN data set (marked `season_type == 2`). Second, the Commissioner's Cup Championship game was also included within the source data set. Both games were removed from data frames using the `dplyr` package's `filter()` function. Third,
+There were several data quirks encountered in this project. First, the WNBA All-Star game was included as a regular season game within the source ESPN data set (marked `season_type == 2`). Second, the Commissioner's Cup Championship game was also included within the source data set. Both games were removed from data frames using the `dplyr` package's `filter()` function. Third, the data frame containing game data and running Elo calculations (`full_elo_df`) requiring transforming into a long format to facilitate successful analysis via the `summarize()` function.
+
+Figure 1 shows how Total Wins varies linearly with a team's Final Elo Rating. While the Total Wins aggregates game performance to a single binary result (win vs. loss), the Elo methodology rewards teams overcoming difficult match-ups more than easier ones. This allows for the mapping of momentum over the course of a season.
+
+The Elo trajectories in Figure 2 demonstrate how high-performing team performance diverges from that of low-performing teams early on in the season. This may be an artifact of the K-factor set to a value of 50, resulting in more responsive running Elo calculation. A future study could investigate the impact of changing the K-factor value between 20 and 100 to determine a relative optimal value.
+
+The upset analysis presented in Figure 3 demonstrates that large Elo differentials between teams does not always translate to a predictable outcome. The Connecticut Sun, a team ranked 3rd to last in the 2025 season, secured three major upsets over playoff-bound teams such as the Seattle Storm, Phoenix Mercury, and New York Liberty, despite high pre-game Elo differentials.
+
+There are several avenues through which this work can be extended and refined. Namely, the K-factor analysis previously suggested could be useful in calibrating the Elo calculations to better mirror WNBA dynamics. Another series of experiment could vary the baseline Elo rating for all teams and determine a representative value for the WNBA context. Additionally, a natural extension could be using this framework for predictive analysis. Using regular-season Elo ratings to predict playoff outcomes could be increasingly informative, particularly as the 2026 WNBA playoffs are soon approaching. Finally, the scope for this project was limited to the 2025 WNBA regular season. Future work should aim to convert this approach into a reusable, durable formula that can compute regular season Elo ratings for any of the WNBA seasons between 1997 and the present. Extending the project to multi-year timeframes would require the application of a dampening calculation to regress end-of-season Elo ratings back toward a mean or baseline value before the subsequent season's running Elo ratings are calculated. Common approaches to this specific inter-season problem have employed exponential decay functions on each team's end-of-season Elo rating to account for off-season dynamics and rest.
