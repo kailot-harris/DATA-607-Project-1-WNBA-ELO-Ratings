@@ -67,7 +67,6 @@ df <- box |>
          team_winner, 
          opponent_team_id, 
          opponent_team_display_name) |>
-  group_by(game_id, team_id) |>
   filter(season_type == 2) |> #only regular season games, no preseason 
   arrange(game_date_time)
 ```
@@ -122,9 +121,13 @@ home_teams <- unique(full_df$home_team_display_name)
 away_teams <- unique(full_df$away_team_display_name)
 # TEAM COLLIER present
 
+knitr::kable(home_teams, caption = "Home Teams List")
+
+knitr::kable(away_teams, caption = "Away Teams List")
+
 full_df <- full_df |>
-  filter(away_team_display_name != "TEAM COLLIER",
-         home_team_display_name != "TEAM CLARK",
+  filter(away_team_display_name != "TEAM COLLIER", # Exclude All-Star Game
+         home_team_display_name != "TEAM CLARK", # Exclude All-Star Game
          game_id != 401736430   # Exclude Commissioner's Cup Championship Game
          )
 
@@ -134,12 +137,19 @@ home_teams <- unique(full_df$home_team_display_name)
 
 away_teams <- unique(full_df$away_team_display_name)
 # TEAM COLLIER removed
+
+knitr::kable(home_teams, caption = "Corrected Home Teams List")
+
+knitr::kable(away_teams, caption = "Corrected Away Teams List")
+
 ```
 
 ## Troubleshooting Extra Lynx vs. Fever Game
 
+A temporary data frame was constructed to display debugging results. First, the `count()` function was utilized to confirm no duplicate games existed in the `full_df` data frame. Second, the temporary data frame inspected only games between the Minnesota Lynx and Indiana Fever, confirming that only 3 regular season games occurred between the pairing. The debugging results are presented in tables below.
+
 ```{r post-mortem-extra-game}
-#| echo: false
+#| echo: true
 #| warning: false
 #| message: false
 
@@ -147,23 +157,31 @@ tmp <- full_df |>
   count(game_id) |> 
   filter(n > 1)
 
-knitr::kable(tmp, caption = "Check for Duplicate Games")
+knitr::kable(tmp, caption = "Confirm No Duplicate Games")
 
 tmp <- full_df |>
   filter(
-    (home_team_display_name == "Minnesota Lynx" & away_team_display_name == "Indiana Fever") |
-      (home_team_display_name == "Indiana Fever" & away_team_display_name == "Minnesota Lynx")
+    (home_team_display_name == "Minnesota Lynx" & 
+       away_team_display_name == "Indiana Fever") |
+      (home_team_display_name == "Indiana Fever" & 
+         away_team_display_name == "Minnesota Lynx")
   ) |>
-  select(game_id, game_date, home_team_display_name, away_team_display_name, home_win)
+  select(
+    game_id, 
+    game_date, 
+    home_team_display_name, 
+    away_team_display_name, 
+    home_win
+    )
 
-knitr::kable(tmp, caption = "Check for Extra Games")
+knitr::kable(tmp, caption = "Confirm Three Regular Season Lynx-Fever Match-ups")
 ```
 
 ## Calculating Running Elo Ratings
 
-A running Elo rating is calculated using the [Elo R package](https://cran.r-project.org/web/packages/elo/index.html) with documentation here: . The `elo.run()` function will be used, which is documented in this [specific vignette](https://cran.r-project.org/web/packages/elo/vignettes/running_elos.html). The initial K value has been set to a value of 50. In the github article above, the author noted that varying K between 20 and 50 did not fundamentally alter the accuracy of their Elo-based predictions. Since the WNBA season is relatively short (44 games) compared to the NBA (82 games), a high, stable K value is preferred so that the Elo ratings are more responsive to intra-season momentum. The baseline Elo rating for the beginning of the 2025 season was set to 1300, as is convention for NBA Elo ratings analysis. Future work could perform experiments where these two parameters are tuned to find optimal settings for predictive accuracy.
+A running Elo rating is calculated using the [Elo R package](https://cran.r-project.org/web/packages/elo/index.html). The `elo.run()` function will be used, which is documented in this [specific vignette](https://cran.r-project.org/web/packages/elo/vignettes/running_elos.html). The initial K value has been set to a value of 50. In the github article above, the author noted that varying K between 20 and 50 did not fundamentally alter the accuracy of their Elo-based predictions. Since the WNBA season is relatively short (44 games) compared to the NBA (82 games), a high, stable K value is preferred so that the Elo ratings are more responsive to intra-season momentum. The baseline Elo rating for the beginning of the 2025 season was set to 1300, as is convention for NBA Elo ratings analysis. Future work could perform experiments where these two parameters are tuned to find optimal settings for predictive accuracy.
 
-```{r ELO-calcs-1}
+```{r Elo-calcs-1}
 #| echo: true
 #| warning: false
 #| message: false
@@ -268,12 +286,12 @@ top_3_df <-  head(summary_2025,3) # top 3 teams summary
 bottom_3_df <- tail(summary_2025,3) # bottom 3 teams summary
 ext_6_df <- bind_rows(top_3_df, bottom_3_df) #combine into 6 team divergent summary
 
-knitr::kable(ext_6_df, caption = "2025 WNBA Compressed ELO Summary Output")
+knitr::kable(ext_6_df, caption = "2025 WNBA Compressed Elo Summary Output")
 ```
 
 ## Visualizing Season Results
 
-First, a plot showing the linearity of a Total Wins vs. Elo Ratings is constructed. Here, custom formatting is achieved using the `theme()` function.
+First, a plot showing the linearity of Total Wins vs. Elo Ratings is constructed. Here, custom formatting is achieved using the `theme()` function.
 
 ```{r viz-Elo-Wins}
 #| echo: true
@@ -284,10 +302,10 @@ summary_2025 |>
   ggplot(aes(x=final_elo, y=total_wins)) +
   geom_point(alpha = 1, color = "black", show.legend = FALSE) +
   geom_smooth(formula = 'y ~ x', method = lm, se = TRUE) +
-  labs(title="Wins vs. End of Season ELO Rating (2025)",
+  labs(title="Wins vs. End of Season Elo Rating (2025)",
        subtitle = "data sourced from wehoop R package", 
        y = "Total Wins", 
-       x = "Final ELO Rating"
+       x = "Final Elo Rating"
        ) +
   theme_dark() +
   theme(
@@ -298,7 +316,7 @@ summary_2025 |>
     axis.text.y = element_text(size = 11, face = "bold"),
     axis.text.x = element_text(size = 11, face = "bold"),
     axis.title.y = element_text(size = 12, face = "bold"),
-    axis.title.x = element_text(size = 12, face = "bold"),
+    axis.title.x = element_text(size = 12, face = "bold")
   )
 ```
 
@@ -355,8 +373,8 @@ upsets <- head(upsets, 6)
 
 upsets |> ggplot(aes(x=elo_diff, y=reorder(matchup, elo_diff))) +
   geom_col(fill = "red", width = 0.75, alpha = 0.7) +
-  geom_text(aes(label = paste("+", round(elo_diff, 0), " pts")), 
-            hjust = 1.15, size = 4, fontface = "bold") +
+  geom_text(aes(color = "white", label = paste("+", round(elo_diff, 0), " pts")), 
+            hjust = 1.15, size = 4, fontface = "bold", show.legend = FALSE) +
   labs(title = "Largest Upset Victories in 2025 Season", subtitle = "(ranked by Elo gain)", y=NULL, x = "Elo Gain", caption = "data sourced from wehoop R package") +
   theme_dark() +
   scale_x_continuous(
@@ -388,3 +406,5 @@ knitr::kable(check_df, caption = "Validated 2025 WNBA Elo Summary Output")
 ```
 
 # Findings and Recommendations
+
+There were several data quirks encountered in this project. First, the WNBA All-Star game was included as a regular season game within the source ESPN data set (marked `season_type == 2`). Second, the Commissioner's Cup Championship game was also included within the source data set. Both games were removed from data frames using the `dplyr` package's `filter()` function. Third,
