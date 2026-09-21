@@ -222,6 +222,8 @@ all_teams_df <- bind_rows(home_team_df, away_team_df) |>
   arrange(team, game_date)
 ```
 
+## Summarizing Season Results
+
 ```{r summarize-season}
 
 #| echo:  true
@@ -232,19 +234,25 @@ summary_2025 <- all_teams_df |>
   group_by(team) |>
   summarize(total_games = n(),
             total_wins = sum(win),
-            total_losses = total_games - total_wins, #not an independent column, nice for summary
-            final_elo = last(team_elo_post),
-            avg_opp_elo = mean(opp_elo_pre)
+            total_losses = total_games - total_wins, #not independent column| nice for viz
+            final_elo = round(last(team_elo_post),0),
+            avg_opp_elo = round(mean(opp_elo_pre),0)
             ) |>
   arrange(desc(total_wins))
 
+top_3_df <-  head(summary_2025,3)
+bottom_3_df <- tail(summary_2025,3)
+ext_6_df <- bind_rows(top_3_df, bottom_3_df)
 ```
+
+## Visualizing Season Results
 
 ```{r viz-1}
 
-summary_2025 |> ggplot(aes(x=final_elo, y=total_wins)) +
+summary_2025 |> 
+  ggplot(aes(x=final_elo, y=total_wins)) +
   geom_point(alpha = 0.8, show.legend = FALSE) +
-  geom_smooth(method = lm, se = TRUE) +
+  geom_smooth(formula = 'y ~ x', method = lm, se = TRUE) +
   theme_minimal()
 ```
 
@@ -254,16 +262,71 @@ notes to fix above graphic:
 
 - labs()
 
-- ungrouped smooth line?
-
 ```{r viz-2}
-top_5_teams_df <- all_teams_df |>
-  filter(team %in% c(""))
-  
+ext_6_names <- unique(ext_6_df$team)
 
+ext_6_game_df <- all_teams_df |>
+  filter(team %in% ext_6_names) |>
+  group_by(team) |>
+  arrange(game_date) |>
+  mutate(pt_size = sum(win)/(n()))
 
-top_5_teams_df |>
+ext_6_game_df |>
   ggplot(aes(x=game_date, y=team_elo_post, color = team)) +
-  geom_line() +
+  geom_point(alpha = 0.5, show.legend = FALSE) +
+  geom_smooth(method = 'loess', formula = 'y~x', show.legend = FALSE) +
   theme_minimal()
 ```
+
+notes to fix above graphic:
+
+- consider adding legend for team name
+
+- labs()
+
+```{r viz-3}
+
+summary_2025 |>
+  ggplot(aes(x=avg_opp_elo, y=total_losses)) +
+  geom_point(alpha=0.8, show.legend = FALSE) +
+  geom_smooth(method = 'lm', formula = 'y ~ x', show.legend = FALSE) +
+  theme_minimal()
+```
+
+notes to fix above graphic:
+
+- 
+
+- labs()
+
+```{r viz-4}
+
+#GOAL: show rel bw avg-opp-elo and final-elo
+
+summary_2025 |>
+  ggplot(aes(x=avg_opp_elo, y=final_elo)) +
+  geom_point(show.legend = FALSE) +
+  geom_smooth(method = 'lm', formula = 'y ~ x', se = TRUE, show.legend = FALSE) +
+  theme_minimal()
+
+```
+
+notes to fix above graphic:
+
+- add in labels via geom_label and chr vector of labels for team names
+
+- labs()
+
+## Exporting to csv
+
+The `summary_2025` data frame can be exported as a csv file using the `readr` package's `write_csv()` function. The CSV can be validated by re-importing it as a new data frame and knitting a table to display the CSV file's contents.
+
+```{r export-to-csv}
+
+write_csv(summary_2025, "wnba_elo_summary_2025.csv")
+
+check_df <- read_csv("wnba_elo_summary_2025.csv")
+knitr::kable(check_df, caption = "Validated 2025 WNBA Elo Summary Output")
+```
+
+# Findings and Recommendations
