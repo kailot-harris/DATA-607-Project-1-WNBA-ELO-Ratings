@@ -299,9 +299,14 @@ First, a plot showing the linearity of Total Wins vs. Elo Ratings is constructed
 #| fig-width: 9
 
 summary_2025 |> 
-  ggplot(aes(x=final_elo, y=total_wins)) +
-  geom_point(alpha = 1, color = "black", show.legend = FALSE) +
-  geom_smooth(formula = 'y ~ x', method = lm, se = TRUE) +
+  ggplot(aes(x=final_elo, 
+             y=total_wins)) +
+  geom_point(alpha = 1, 
+             color = "black", 
+             show.legend = FALSE) +
+  geom_smooth(formula = 'y ~ x', 
+              method = lm, 
+              se = TRUE) +
   labs(title="Wins vs. End of Season Elo Rating (2025)",
        subtitle = "data sourced from wehoop R package", 
        y = "Total Wins", 
@@ -338,10 +343,21 @@ ext_6_game_df <- all_teams_df |>
   mutate(pt_size = sum(win)/(n()))
 
 ext_6_game_df |>
-  ggplot(aes(x=game_date, y=team_elo_post, color = team)) +
-  geom_point(alpha = 0.5, show.legend = FALSE, size = 2.75) +
-  geom_smooth(method = 'loess', formula = 'y~x', show.legend = TRUE, linewidth = 1.75) +
-  labs(title = "Elo Trajectory Through 2025 Season for Top and Bottom 3 Teams", subtitle = "data sourced from wehoop R package", y= "Elo Rating", x= "Game Date (2025)", color = "Team") +
+  ggplot(aes(x=game_date, 
+             y=team_elo_post, 
+             color = team)) +
+  geom_point(alpha = 0.5, 
+             show.legend = FALSE, 
+             size = 2.75) +
+  geom_smooth(method = 'loess', 
+              formula = 'y~x', 
+              show.legend = TRUE, 
+              linewidth = 1.75) +
+  labs(title = "Elo Trajectory Through 2025 Season for Top and Bottom 3 Teams",
+       subtitle = "data sourced from wehoop R package", 
+       y= "Elo Rating", 
+       x= "Game Date (2025)", 
+       color = "Team") +
   theme_dark() +
   theme(
     plot.title.position = "plot",
@@ -366,20 +382,41 @@ Finally, a column chart showing the victories with the largest upsets (as indica
 
 upsets <- full_elo_df |>
   mutate(
-    winning_team = if_else(home_win == 1, home_team_display_name, away_team_display_name),
-    losing_team = if_else(home_win == 1, away_team_display_name, home_team_display_name),
-    elo_diff = if_else(home_win == 1, abs(home_elo_post - home_elo_pre), abs(away_elo_post - away_elo_pre)),
-    matchup = paste0(winning_team," over ",losing_team,"\n(date: ",game_date,")")
+    winning_team = if_else(home_win == 1, 
+                           home_team_display_name, 
+                           away_team_display_name),
+    losing_team = if_else(home_win == 1, 
+                          away_team_display_name, 
+                          home_team_display_name),
+    elo_diff = if_else(home_win == 1, 
+                       abs(home_elo_post - home_elo_pre), 
+                       abs(away_elo_post - away_elo_pre)),
+    matchup = paste0(winning_team,
+                     " over ",
+                     losing_team,
+                     "\n(date: ",
+                     game_date,
+                     ")")
   ) |>
   arrange(desc(elo_diff))
 
 upsets <- head(upsets, 6)
 
 upsets |> ggplot(aes(x=elo_diff, y=reorder(matchup, elo_diff))) +
-  geom_col(fill = "red", width = 0.75, alpha = 0.7) +
-  geom_text(aes(color = "white", label = paste("+", round(elo_diff, 0), " pts")), 
-            hjust = 1.15, size = 4, fontface = "bold", show.legend = FALSE) +
-  labs(title = "Largest Upset Victories in 2025 Season", subtitle = "(ranked by Elo gain)", y=NULL, x = "Elo Gain", caption = "data sourced from wehoop R package") +
+  geom_col(fill = "red", 
+           width = 0.75, 
+           alpha = 0.7) +
+  geom_text(aes(color = "white", 
+                label = paste("+", round(elo_diff, 0), " pts")),
+            hjust = 1.15, 
+            size = 4, 
+            fontface = "bold", 
+            show.legend = FALSE) +
+  labs(title = "Largest Upset Victories in 2025 Season", 
+       subtitle = "(ranked by Elo gain)", 
+       y=NULL, 
+       x = "Elo Gain", 
+       caption = "data sourced from wehoop R package") +
   theme_dark() +
   scale_x_continuous(
     limits = c(0, 50)) +
