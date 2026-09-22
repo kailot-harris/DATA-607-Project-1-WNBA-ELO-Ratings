@@ -37,17 +37,15 @@ ul.task-list li input[type="checkbox"] {
 <link href="Project1-KCH-WNBA_ELO_Ratings-Approach_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="Project1-KCH-WNBA_ELO_Ratings-Approach_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
 <link href="Project1-KCH-WNBA_ELO_Ratings-Approach_files/libs/quarto-html/quarto-syntax-highlighting-dark-0a6b7249c26820e032cb0bd839ff02b1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="Project1-KCH-WNBA_ELO_Ratings-Approach_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="Project1-KCH-WNBA_ELO_Ratings-Approach_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="Project1-KCH-WNBA_ELO_Ratings-Approach_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="Project1-KCH-WNBA_ELO_Ratings-Approach_files/libs/bootstrap/bootstrap-293cc809d15782442e9b1098eedb6797.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
 <link href="Project1-KCH-WNBA_ELO_Ratings-Approach_files/libs/bootstrap/bootstrap-dark-7b2b20282c8da1075b52e56187ace71c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="Project1-KCH-WNBA_ELO_Ratings-Approach_files/libs/bootstrap/bootstrap-293cc809d15782442e9b1098eedb6797.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
 
-<body class="fullcontent quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="fullcontent quarto-dark"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -189,10 +187,8 @@ ul.task-list li input[type="checkbox"] {
         changeGiscusTheme();
       }
     };
-    const authorPrefersDark = false;
+    const authorPrefersDark = true;
     const darkModeDefault = authorPrefersDark;
-      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
-      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
     let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
     // Dark / light mode switch
     window.quartoToggleColorScheme = () => {
@@ -247,10 +243,15 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="introduction-and-overview" class="level2">
-<h2 class="anchored" data-anchor-id="introduction-and-overview">Introduction and Overview</h2>
-<p>In this project, the ELO rating methodology, which was developed to rank Chess players by Arpad Elo, will be applied to WNBA teams. Data will be sourced from the wehoop R package (<a href="https://wehoop.sportsdataverse.org/" class="uri">https://wehoop.sportsdataverse.org/</a>). A convention established by the fivethirtyeight blog, and repeated in this article (<a href="https://nicidob.github.io/nba_elo/" class="uri">https://nicidob.github.io/nba_elo/</a>) applying ELO ratings to NBA teams, is to start with a baseline value of 1300 for each team.</p>
-<p>Anticipated challenges involve maintaining a reasonable scale: WNBA data exists extending back to 1997, and computing 29 seasons of ELO ratings may prove cumbersome if an efficient and repeatable architecture is not implemented from the start. The 2025 season will be used as a baseline from which the methods can be extended backward to cover the entire WNBA history, if practical. Other anticipated challenges may arise when visualizing the results of this analysis. A potential graph could compare ELO ratings vs time for a select group of teams.</p>
+<section id="introduction-and-overview" class="level1">
+<h1>Introduction and Overview</h1>
+<p>In this project, the Elo rating methodology, which was developed to rank Chess players by Arpad Elo, will be applied to WNBA teams. Data will be sourced from the <a href="https://wehoop.sportsdataverse.org/">wehoop R package</a>. A convention established by the <a href="https://fivethirtyeight.com">FiveTh</a><a href="fivethirtyeight.com">irtyEight</a> blog, and repeated in this <a href="https://nicidob.github.io/nba_elo/">article</a> applying Elo ratings to NBA teams, is to start with a baseline value of 1300 for each team.</p>
+<p>Anticipated challenges involve maintaining a reasonable scale: WNBA data exists extending back to 1997, and computing 29 seasons of Elo ratings may prove cumbersome if an efficient and repeatable architecture is not implemented from the start. The 2025 season will be used as a baseline from which the methods can be extended backward to cover the entire WNBA history, if practical. The 2025 season is the most recently resolved regular season. Other anticipated challenges may arise when visualizing the results of this analysis. A potential graph could compare Elo ratings vs time for a select group of teams.</p>
+</section>
+<section id="adaptation" class="level1">
+<h1>Adaptation</h1>
+<p>The original project assignment, related to a chess tournament, asked for specific outputs in a .csv file (e.g.&nbsp;player name, player state, total number of points, player pre-rating, and average opponent rating). For this adapted project, the output .csv file will contain columns for: team name, total wins, final Elo rating, and opponents’ average Elo rating.</p>
+<p>In the context of a single WNBA season, the last metric (opponents’ average Elo rating) is not an effective proxy for strength of schedule, due to the balanced, round-robin structure of the WNBA. There are 13 teams (as of 2025) and each team plays each opponent team 3 or 4 times total in a season, amounting to 44 total games per team. Because Elo is a zero-sum system with a baseline value, the mean rating of all teams played over the course of a season will tend toward the baseline Elo rating of 1300. If this project is extended to trace multiyear Elo rating trajectories, then the opponents’ average Elo rating may hold more significance for analysis.</p>
 </section>
 
 </main>
