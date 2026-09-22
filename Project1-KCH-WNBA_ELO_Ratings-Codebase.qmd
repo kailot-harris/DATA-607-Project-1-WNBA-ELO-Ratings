@@ -11,7 +11,7 @@ theme:
 
 # Introduction and Overview
 
-In this project, the Elo rating methodology, which was developed to rank Chess players by Arpad Elo, will be applied to WNBA teams. Data will be sourced from the [wehoop R package](https://wehoop.sportsdataverse.org/). A convention established by the [FiveTh](https://fivethirtyeight.com)[irtyEight](fivethirtyeight.com) blog, and repeated in this [article](https://nicidob.github.io/nba_elo/) applying Elo ratings to NBA teams, is to start with a baseline value of 1300 for each team.
+In this project, the Elo rating methodology, which was developed to rank Chess players by Arpad Elo, will be applied to WNBA teams. Data will be sourced from the [wehoop R package](https://wehoop.sportsdataverse.org/). A convention established by the [FiveThirtyEight](https://fivethirtyeight.com) blog, and repeated in this [article](https://nicidob.github.io/nba_elo/) applying Elo ratings to NBA teams, is to start with a baseline value of 1300 for each team.
 
 Anticipated challenges involve maintaining a reasonable scale: WNBA data exists extending back to 1997, and computing 29 seasons of Elo ratings may prove cumbersome if an efficient and repeatable architecture is not implemented from the start. The 2025 season will be used as a baseline from which the methods can be extended backward to cover the entire WNBA history, if practical. The 2025 season is the most recently resolved regular season. Other anticipated challenges may arise when visualizing the results of this analysis. A potential graph could compare Elo ratings vs time for a select group of teams.
 
@@ -23,7 +23,7 @@ In the context of a single WNBA season, the last metric (opponents' average Elo 
 
 # Codebase
 
-```{r libraries-packages}
+```{r packages}
 #| echo:  false
 #| warning:  false
 #| message:  false
@@ -209,8 +209,6 @@ The `elo_results` data frame is appended to the `full_df` data frame, which merg
 
 full_elo_df <- bind_cols(full_df, elo_results) 
 
-#view(full_elo_df)
-
 full_elo_df <- full_elo_df |>
   mutate(
     home_elo_pre =elo.A - update.A,
@@ -259,7 +257,7 @@ away_team_df <- full_elo_df |>
          team_elo_post = away_elo_post,
          opp_elo_pre = home_elo_pre
   )
-all_teams_df <- bind_rows(home_team_df, away_team_df) |>
+all_teams_df <- bind_rows(home_team_df, away_team_df) |> # make a long data frame
   arrange(team, game_date)
 ```
 
@@ -351,7 +349,9 @@ ext_6_game_df |>
     plot.title = element_text(size = 15, face = "bold"),
     plot.subtitle = element_text(size = 13, face = "italic"),
     axis.text.y = element_text(size = 11, face = "bold"),
-    axis.text.x = element_text(size = 11, face = "bold")
+    axis.text.x = element_text(size = 11, face = "bold"),
+    axis.title.y = element_text(size = 12, face = "bold"),
+    axis.title.x = element_text(size = 12, face = "bold")
   )
 ```
 
@@ -390,7 +390,8 @@ upsets |> ggplot(aes(x=elo_diff, y=reorder(matchup, elo_diff))) +
     plot.subtitle = element_text(size = 13, face = "italic"),
     plot.caption = element_text(size = 10, face = "italic", hjust = 0),
     axis.text.y = element_text(size = 11, face = "bold.italic"),
-    axis.text.x = element_text(size = 11, face = "bold")
+    axis.text.x = element_text(size = 11, face = "bold"),
+    axis.title.x = element_text(size = 12, face = "bold")
     )
 ```
 
