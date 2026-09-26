@@ -1,0 +1,3 @@
+https://github.com/kailot-harris/DATA-607-Project-1-WNBA-ELO-Ratings/blob/main/Project1-KCH-WNBA_ELO_Ratings-Codebase.html
+
+https://github.com/kailot-harris/DATA-607-Project-1-WNBA-ELO-Ratings/blob/main/Project1-KCH-WNBA_ELO_Ratings-Codebase.qmd

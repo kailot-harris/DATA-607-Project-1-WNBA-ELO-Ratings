@@ -1,14 +1,14 @@
-team,total_games,total_wins,total_losses,final_elo,avg_opp_elo
-Minnesota Lynx,44,34,10,1449,1294
-Atlanta Dream,44,30,14,1491,1298
-Las Vegas Aces,44,30,14,1559,1291
-New York Liberty,44,27,17,1344,1300
-Phoenix Mercury,44,27,17,1333,1295
-Indiana Fever,44,24,20,1343,1284
-Golden State Valkyries,44,23,21,1304,1293
-Seattle Storm,44,23,21,1295,1293
-Los Angeles Sparks,44,21,23,1323,1301
-Washington Mystics,44,16,28,1106,1301
-Connecticut Sun,44,11,33,1172,1309
-Chicago Sky,44,10,34,1085,1324
-Dallas Wings,44,10,34,1096,1311
+team,total_wins,final_elo,avg_opp_elo
+Minnesota Lynx,34,1449,1294
+Atlanta Dream,30,1491,1298
+Las Vegas Aces,30,1559,1291
+New York Liberty,27,1344,1300
+Phoenix Mercury,27,1333,1295
+Indiana Fever,24,1343,1284
+Golden State Valkyries,23,1304,1293
+Seattle Storm,23,1295,1293
+Los Angeles Sparks,21,1323,1301
+Washington Mystics,16,1106,1301
+Connecticut Sun,11,1172,1309
+Chicago Sky,10,1085,1324
+Dallas Wings,10,1096,1311
